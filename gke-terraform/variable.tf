@@ -1,7 +1,7 @@
 variable "project" {
   description = "this is gcp project-id"
   type        = string
-  default     = "pipeline-java-demo"
+  default     = "jenkins-server-477813"
 }
 
 variable "region" {

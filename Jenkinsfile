@@ -27,7 +27,7 @@ pipeline {
                 sh """
                     gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                     gcloud config set project ${GOOGLE_CLOUD_PROJECT}
-                    gcloud auth configure-docker us-central1-docker.pkg.dev
+                    gcloud auth configure-docker asia-south1-docker.pkg.dev
                 """
             }
         }
@@ -67,7 +67,7 @@ pipeline {
         stage('Authenticate & Build Docker Image') {
             steps {
                 script {
-                    sh 'cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev'
+                    sh 'cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://asia-south1-docker.pkg.dev'
                     sh """
                     docker build -t hello:latest .
                     """
@@ -78,13 +78,13 @@ pipeline {
         stage('Tag & Push Docker Image to GCP Artifact Registry') {
             steps {
                 script {
-                    sh 'cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://us-central1-docker.pkg.dev'
+                    sh 'cat $GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://asia-south1-docker.pkg.dev'
                     sh """
-                    docker tag hello:latest us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}
-                    docker push us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}
-                    docker tag hello:latest us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:latest
-                    docker push us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:latest
-                    docker rmi us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG} || true
+                    docker tag hello:latest asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}
+                    docker push asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}
+                    docker tag hello:latest asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:latest
+                    docker push asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:latest
+                    docker rmi asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG} || true
                     docker rmi hello:latest || true
                     docker volume prune -f
                     """
@@ -94,7 +94,7 @@ pipeline {
 
         stage('Scan Latest Docker Image using Trivy') {
             steps {
-                sh "trivy image us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}"
+                sh "trivy image asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}"
             }
         }
 
@@ -133,7 +133,7 @@ pipeline {
                     grep "image:" helm/values.yaml || echo "Pattern not found. Proceeding with replacement."
 
                     # Update helm values.yaml file with the new Docker image tag
-                    sed -i "s|image: us-central1-docker.pkg.dev/.*/docker-repo/hello:.*|image: us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}|" helm/values.yaml
+                    sed -i "s|image: asia-south1-docker.pkg.dev/.*/docker-repo/hello:.*|image: asia-south1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/docker-repo/hello:${IMAGE_TAG}|" helm/values.yaml
 
                     # Print file after updating to confirm changes
                     echo "=== AFTER ==="
